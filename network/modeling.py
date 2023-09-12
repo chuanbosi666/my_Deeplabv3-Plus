@@ -82,6 +82,7 @@ def _segm_xception(name, backbone_name, num_classes, output_stride, pretrained_b
 
 
 def _segm_mobilenet(name, backbone_name, num_classes, output_stride, pretrained_backbone):
+    # 通过传进来的参数可知，我们的outtput_stride为16,也就是这一个会影响感受野大小，对应着一个像素点的感受野大小
     if output_stride==8:
         aspp_dilate = [12, 24, 36]
     else:
@@ -90,27 +91,27 @@ def _segm_mobilenet(name, backbone_name, num_classes, output_stride, pretrained_
     backbone = mobilenetv2.mobilenet_v2(pretrained=pretrained_backbone, output_stride=output_stride)
     
     # rename layers
-    backbone.low_level_features = backbone.features[0:4]
-    backbone.high_level_features = backbone.features[4:-1]
+    backbone.low_level_features = backbone.features[0:4]  # 对于我们的mobilenetv2，我们的低级特征就是前四层
+    backbone.high_level_features = backbone.features[4:-1]  # 而高级特征就是第四层之后的所有层
     backbone.features = None
     backbone.classifier = None
 
     inplanes = 320
     low_level_planes = 24
     
-    if name=='deeplabv3plus':
+    if name=='deeplabv3plus':  # 这里我们会得到一个字典，字典的内容就是我们的低级特征和高级特征
         return_layers = {'high_level_features': 'out', 'low_level_features': 'low_level'}
         classifier = DeepLabHeadV3Plus(inplanes, low_level_planes, num_classes, aspp_dilate)
     elif name=='deeplabv3':
         return_layers = {'high_level_features': 'out'}
         classifier = DeepLabHead(inplanes , num_classes, aspp_dilate)
-    backbone = IntermediateLayerGetter(backbone, return_layers=return_layers)
+    backbone = IntermediateLayerGetter(backbone, return_layers=return_layers)  # 通过IntermediateLayerGetter，我们可以将我们的字典中的内容进行提取
 
     model = DeepLabV3(backbone, classifier)
     return model
 
 def _load_model(arch_type, backbone, num_classes, output_stride, pretrained_backbone):
-
+    # 通过这个函数，将我们的模型进行加载，我们的文件使用的mobilenetv2作为backbone，arch_type为deeplabv3plus
     if backbone=='mobilenetv2':
         model = _segm_mobilenet(arch_type, backbone, num_classes, output_stride=output_stride, pretrained_backbone=pretrained_backbone)
     elif backbone.startswith('resnet'):
@@ -202,6 +203,7 @@ def deeplabv3plus_resnet101(num_classes=21, output_stride=8, pretrained_backbone
 
 
 def deeplabv3plus_mobilenet(num_classes=21, output_stride=8, pretrained_backbone=True):
+    # 在训练的文件中，我们的参数指定的为deeplabv3plus_mobilenet，所以这里的name就是deeplabv3plus，backbone就是mobilenetv2
     """Constructs a DeepLabV3+ model with a MobileNetv2 backbone.
 
     Args:
