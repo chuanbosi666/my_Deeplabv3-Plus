@@ -27,7 +27,7 @@ class DeepLabV3(_SimpleSegmentationModel):  # 通过这一步来获取Deeplabv3�
 
 class DeepLabHeadV3Plus(nn.Module):  #构建完整的Deeplabv3+模块 ，从上面的__all__ = ["DeepLabV3"]可以得到，DeepLabHeadV3Plus继承了DeepLabHeadV3
     def __init__(self, in_channels, low_level_channels, num_classes, aspp_dilate=[12, 24, 36]):  #设定输入通道，类别数，ASPP的扩张率
-        #这里说明一下，可从论文看到，使用的DCNN模块是Deeplabv3，所对应的'out'，也是就layers4的输出，而'LOW_level'是layers3的输出
+        #这里说明一下，可从论文看到，使用的DCNN模块是Deeplabv3，'Low_level'对应的是前四层的输出
         super(DeepLabHeadV3Plus, self).__init__()
         self.project = nn.Sequential( 
             nn.Conv2d(low_level_channels, 48, 1, bias=False),
