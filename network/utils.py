@@ -7,18 +7,18 @@ from collections import OrderedDict
 class _SimpleSegmentationModel(nn.Module):
     def __init__(self, backbone, classifier):
         super(_SimpleSegmentationModel, self).__init__()
-        self.backbone = backbone
-        self.classifier = classifier
+        self.backbone = backbone  #传入backbone
+        self.classifier = classifier  #分类器定义
         
     def forward(self, x):
-        input_shape = x.shape[-2:]
-        features = self.backbone(x)
-        x = self.classifier(features)
-        x = F.interpolate(x, size=input_shape, mode='bilinear', align_corners=False)
+        input_shape = x.shape[-2:]  # 取其大小尺寸
+        features = self.backbone(x)  # 提取特征
+        x = self.classifier(features)  # 将其放入分类器
+        x = F.interpolate(x, size=input_shape, mode='bilinear', align_corners=False) # 再使用双线性插值进行上采样，还原成原来的大小
         return x
 
 
-class IntermediateLayerGetter(nn.ModuleDict):
+class IntermediateLayerGetter(nn.ModuleDict):  # 对于这个的模块，之前的代码有写过，就是为了使用辅助分类器，从中间层提取特征，所以，就没必要写了
     """
     Module wrapper that returns intermediate layers from a model
 
@@ -53,7 +53,7 @@ class IntermediateLayerGetter(nn.ModuleDict):
         if not set(return_layers).issubset([name for name, _ in model.named_children()]):
             raise ValueError("return_layers are not present in model")
 
-        self.hrnet_flag = hrnet_flag
+        self.hrnet_flag = hrnet_flag  # 
 
         orig_return_layers = return_layers
         return_layers = {k: v for k, v in return_layers.items()}
